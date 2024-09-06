@@ -2,7 +2,7 @@ trigger:
 - main
 
 pool:
-  name: 'vips-agent'  # Specify your custom agent pool here
+  name: 'myagentpool'  # Specify your custom agent pool here
 
 parameters:
 - name: delete_docker_image
