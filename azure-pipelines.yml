@@ -26,14 +26,6 @@ steps:
       docker build -t my-docker-image:latest .
     displayName: 'Build Docker Image'
 
-  - task: Docker@2
-    inputs:
-      command: 'push'
-      containerRegistry: 'myContainerRegistryServiceConnection'
-      repository: 'my-docker-image'
-      tags: 'latest'
-    displayName: 'Push Docker Image'
-
   - script: |
       if [ '${{ parameters.configuration }}' == 'yes' ]; then
         echo "Deleting Docker image..."
