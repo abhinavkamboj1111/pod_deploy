@@ -14,10 +14,10 @@ parameters:
   - 'no'
 
 steps:
--script: |
-    echo "Remove idx, pac, rev file"
+- script: |
+    echo "Removing old Git pack files..."
     rm -rf $(Build.SourcesDirectory)/.git/objects/pack
-  displayName: 'Remove files'
+  displayName: 'Remove Old Git Pack Files'
   
 - checkout: self  # Use 'self' to check out the repository where the YAML is located
 
