@@ -23,7 +23,7 @@ steps:
 
   - script: |
       echo "Building Docker image..."
-      docker build -t my-docker-image:latest
+      docker build -t my-docker-image:latest .
     displayName: 'Build Docker Image'
 
   - script: |
@@ -34,3 +34,4 @@ steps:
         echo "Skipping Docker image deletion."
       )
     displayName: 'Delete Docker Image'
+    shell: cmd
