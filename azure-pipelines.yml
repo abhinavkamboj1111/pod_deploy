@@ -1,36 +1,74 @@
 trigger:
-  branches:
-    include:
-      - main
+- main
 
 pool:
-  name: 'myagentpool'
-  demands:
-    - agent.name -equals azDevOpsAgentSelf
-    
+  name: 'vips-agent'  # Specify your custom agent pool here
+
 parameters:
-  - name: configuration
-    displayName: Configuration
-    type: string
-    default: 'no'
-    values:
-      - 'yes'
-      - 'no'
+- name: delete_docker_image
+  displayName: Delete Docker Image
+  type: string
+  default: 'no'
+  values:
+  - 'yes'
+  - 'no'
 
 steps:
-  - checkout: self
-    displayName: 'Checkout Repository'
+- checkout: self  # Use 'self' to check out the repository where the YAML is located
 
-  - script: |
-      echo "Building Docker image..."
-      docker build -t my-docker-image:latest .
-    displayName: 'Build Docker Image'
+- script: |
+    echo "Building Docker images..."
+    docker build -t vipstest.azurecr.io/qa:$(Build.BuildNumber) .
+    echo "Built Docker image: vipstest.azurecr.io/qa:$(Build.BuildNumber)"
+    
+    docker build -t vipstest.azurecr.io/qa-azurequeueimport:$(Build.BuildNumber) .
+    echo "Built Docker image: vipstest.azurecr.io/qa-azurequeueimport:$(Build.BuildNumber)"
+    
+    docker build -t vipstest.azurecr.io/qa-azurequeuepayroll:$(Build.BuildNumber) .
+    echo "Built Docker image: vipstest.azurecr.io/qa-azurequeuepayroll:$(Build.BuildNumber)"
+    
+    docker push vipstest.azurecr.io/qa:$(Build.BuildNumber)
+    echo "Pushed Docker image: vipstest.azurecr.io/qa:$(Build.BuildNumber)"
+    
+    docker push vipstest.azurecr.io/qa-azurequeueimport:$(Build.BuildNumber)
+    echo "Pushed Docker image: vipstest.azurecr.io/qa-azurequeueimport:$(Build.BuildNumber)"
+    
+    docker push vipstest.azurecr.io/qa-azurequeuepayroll:$(Build.BuildNumber)
+    echo "Pushed Docker image: vipstest.azurecr.io/qa-azurequeuepayroll:$(Build.BuildNumber)"
+  displayName: 'Build and Push Docker Images'
 
-  - script: |
-      if "%configuration%" == "yes" (
-        echo "Deleting Docker image..."
-        docker rmi my-docker-image:latest || exit 0
-      ) else (
-        echo "Skipping Docker image deletion."
-      )
-    displayName: 'Delete Docker Image'
+- powershell: |
+    $config = '${{ parameters.delete_docker_image }}'
+    if ($config -eq 'yes') {
+      Write-Host "Deleting Docker images with build number $(Build.BuildNumber)"
+      
+      docker rmi vipstest.azurecr.io/qa:$(Build.BuildNumber)
+      Write-Host "Deleted Docker image: vipstest.azurecr.io/qa:$(Build.BuildNumber)"
+      
+      docker rmi vipstest.azurecr.io/qa-azurequeueimport:$(Build.BuildNumber)
+      Write-Host "Deleted Docker image: vipstest.azurecr.io/qa-azurequeueimport:$(Build.BuildNumber)"
+      
+      docker rmi vipstest.azurecr.io/qa-azurequeuepayroll:$(Build.BuildNumber)
+      Write-Host "Deleted Docker image: vipstest.azurecr.io/qa-azurequeuepayroll:$(Build.BuildNumber)"
+    } else {
+      Write-Host "Retagging Docker images to dev with build number $(Build.BuildNumber)"
+      
+      docker tag vipstest.azurecr.io/qa:$(Build.BuildNumber) vipstest.azurecr.io/dev:$(Build.BuildNumber)
+      Write-Host "Tagged Docker image as: vipstest.azurecr.io/dev:$(Build.BuildNumber)"
+      
+      docker tag vipstest.azurecr.io/qa-azurequeueimport:$(Build.BuildNumber) vipstest.azurecr.io/dev-azurequeueimport:$(Build.BuildNumber)
+      Write-Host "Tagged Docker image as: vipstest.azurecr.io/dev-azurequeueimport:$(Build.BuildNumber)"
+      
+      docker tag vipstest.azurecr.io/qa-azurequeuepayroll:$(Build.BuildNumber) vipstest.azurecr.io/dev-azurequeuepayroll:$(Build.BuildNumber)
+      Write-Host "Tagged Docker image as: vipstest.azurecr.io/dev-azurequeuepayroll:$(Build.BuildNumber)"
+      
+      docker push vipstest.azurecr.io/dev:$(Build.BuildNumber)
+      Write-Host "Pushed Docker image: vipstest.azurecr.io/dev:$(Build.BuildNumber)"
+      
+      docker push vipstest.azurecr.io/dev-azurequeueimport:$(Build.BuildNumber)
+      Write-Host "Pushed Docker image: vipstest.azurecr.io/dev-azurequeueimport:$(Build.BuildNumber)"
+      
+      docker push vipstest.azurecr.io/dev-azurequeuepayroll:$(Build.BuildNumber)
+      Write-Host "Pushed Docker image: vipstest.azurecr.io/dev-azurequeuepayroll:$(Build.BuildNumber)"
+    }
+  displayName: 'Delete or Retag Docker Images'
