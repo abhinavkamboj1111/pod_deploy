@@ -1,0 +1,44 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+parameters:
+  - name: configuration
+    displayName: Configuration
+    type: string
+    default: 'no'
+    values:
+      - 'yes'
+      - 'no'
+
+steps:
+  - task: Checkout@1
+    inputs:
+      repository: 'https://github.com/abhinavkamboj1111/pod_deploy'
+    displayName: 'Checkout Repository'
+
+  - script: |
+      echo "Building Docker image..."
+      docker build -t my-docker-image:latest .
+    displayName: 'Build Docker Image'
+
+  - task: Docker@2
+    inputs:
+      command: 'push'
+      containerRegistry: 'myContainerRegistryServiceConnection'
+      repository: 'my-docker-image'
+      tags: 'latest'
+    displayName: 'Push Docker Image'
+
+  - script: |
+      if [ '${{ parameters.configuration }}' == 'yes' ]; then
+        echo "Deleting Docker image..."
+        docker rmi my-docker-image:latest || true
+      else
+        echo "Skipping Docker image deletion."
+      fi
+    displayName: 'Delete Docker Image'
