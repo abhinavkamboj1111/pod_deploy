@@ -34,4 +34,3 @@ steps:
         echo "Skipping Docker image deletion."
       )
     displayName: 'Delete Docker Image'
-    shell: cmd
