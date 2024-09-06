@@ -23,14 +23,15 @@ steps:
 
   - script: |
       echo "Building Docker image..."
-      docker build -t my-docker-image:latest .
+      docker build -t my-docker-image:latest
     displayName: 'Build Docker Image'
 
   - script: |
-      if [ '${{ parameters.configuration }}' == 'yes' ]; then
+      if "%configuration%" == "yes" (
         echo "Deleting Docker image..."
-        docker rmi my-docker-image:latest || true
-      else
+        docker rmi my-docker-image:latest || exit 0
+      ) else (
         echo "Skipping Docker image deletion."
-      fi
+      )
     displayName: 'Delete Docker Image'
+    shell: cmd
