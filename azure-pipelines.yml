@@ -14,6 +14,11 @@ parameters:
   - 'no'
 
 steps:
+-script: |
+    echo "Remove idx, pac, rev file"
+    rm -rf $(Build.SourcesDirectory)/.git/objects/pack
+  displayName: 'Remove files'
+  
 - checkout: self  # Use 'self' to check out the repository where the YAML is located
 
 - script: |
