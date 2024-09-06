@@ -18,9 +18,7 @@ parameters:
       - 'no'
 
 steps:
-  - task: Checkout@1
-    inputs:
-      repository: 'https://github.com/abhinavkamboj1111/pod_deploy'
+  - checkout: self
     displayName: 'Checkout Repository'
 
   - script: |
