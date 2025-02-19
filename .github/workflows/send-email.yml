@@ -1,0 +1,34 @@
+name: Send Email After Job
+
+on:
+  push:
+    branches:
+      - main  # Trigger the workflow when code is pushed to the 'main' branch
+
+jobs:
+  test-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run a simple job
+        run: echo "Running a test job..."
+
+  send-email:
+    runs-on: ubuntu-latest
+    needs: test-job  # Ensure email is sent after the 'test-job' finishes
+
+    steps:
+      - name: Send email
+        if: always()  # Ensure the email is sent regardless of the result of 'test-job'
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: smtp.gmail.com  # Gmail SMTP server
+          server_port: 465  # Port for SSL
+          username: ${{ secrets.EMAIL_USERNAME }}  # Your Gmail address (stored as GitHub secret)
+          password: ${{ secrets.EMAIL_PASSWORD }}  # Your Gmail password or app password (stored as GitHub secret)
+          subject: "${{ github.job }} job of ${{ github.repository }} has ${{ job.status }}"
+          body: "The job ${{ github.job }} in workflow ${{ github.workflow }} of ${{ github.repository }} has ${{ job.status }}."
+          to: it.1902590@gmail.com,abhinavkamboj2002@gmail.com  # Replace with the email addresses you want to send the email to
+          from: "GitHub Actions <${{ secrets.EMAIL_USERNAME }}>"  # Your Gmail address for the 'From' field
